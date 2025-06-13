@@ -35,7 +35,7 @@ def diff(
     
     len_binder = 100
     num_cycles = 4
-    num_backbones = 10
+    num_backbones = 2
     num_designs = 1
     diff_steps = 100
     
@@ -49,6 +49,7 @@ def diff(
                                     num_cycles = num_cycles,
                                     num_backbones = num_backbones,
                                     num_designs = num_designs,
+                                    design_method=None,
                                     diff_steps = diff_steps,
                                     hot_sphere = None,
                                     weights_backbone = weights_backbone,
@@ -159,6 +160,7 @@ def main():
     args = parser.parse_args()
 
     benchmark(args)
+
 if __name__ == "__main__":
     main()
 

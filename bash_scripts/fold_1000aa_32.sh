@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -N scale_sims
+#PBS -N scale_folding
 #PBS -l select=32
 #PBS -l walltime=02:00:00
 #PBS -q prod
@@ -25,28 +25,27 @@ export HYDRA_TOPO_DEBUG=1
 
 export RANKS_PER_NODE=12
 
-mpiexec -np $(cat $PBS_NODEFILE | wc -l) -ppn 1 --pmi=pmix hostname > ./helpers/hostnamelist_diff.dat
-NUMNODES_TOT="$(cat ./helpers/hostnamelist_diff.dat | wc -l)"
-
-mpiexec -np $NUMNODES_TOT -ppn 1 cp -r chroma_weights /dev/shm/
-mpiexec -np $NUMNODES_TOT -ppn 1 cp input_data/2g3n.cif /tmp/
+mpiexec -np $(cat $PBS_NODEFILE | wc -l) -ppn 1 --pmi=pmix hostname > ./helpers/hostnamelist.dat
+NUMNODES_TOT="$(cat ./helpers/hostnamelist.dat | wc -l)"
+echo $NUMNODES_TOT
 module load frameworks
 source /lus/flare/projects/FoundEpidem/avasan/envs/peptide_des_venv/bin/activate
-node_list=(1)
-#node_list=(1 2 4 8 16 32)
-
+mpiexec -np $NUMNODES_TOT -ppn 1 cp -r chai_weights_downloaded /dev/shm/ 
+#node_list=(1 2)
+node_list=(32)
+export CHAI_DOWNLOADS_DIR=/dev/shm/chai_weights_downloaded
+mkdir ./Folding/aa_1000
 for n in "${node_list[@]}"; do
     echo "Value: $n"
     TOTAL_NUMBER_OF_RANKS=$((n * RANKS_PER_NODE))
     mpirun -n $TOTAL_NUMBER_OF_RANKS -ppn 12 \
-        ./helpers/set_ze_mask.sh \
         ./helpers/interposer.sh \
-        python -m \
-        incite_bench.diffusion \
-        -i nmnat2_protonly.pdb \
-        -o /dev/shm/out_diff_${n} \
+        ./helpers/set_ze_mask.sh \
+        python -m incite_bench.fold \
+        -s input_data/whsc1_seq.txt \
+        -o /dev/shm/out_test_${n} \
         -t 2 \
         -N ${n} \
-        -tf Diffusion/diffusion_times \
-        > logs/diffusion_${n}.log 2> logs/diffusion_${n}.err
+        -tf Folding/aa_1000/folding_times_new \
+        > logs/folds_1k_${n}.log 2> logs/folds_1k_${n}.err
 done

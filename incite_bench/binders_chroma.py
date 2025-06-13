@@ -67,6 +67,7 @@ class ChromaBinders:
     weights_design: str = 'chroma_weights/03a3a9af343ae74998768a2711c8b7ce/weights.pt'
     weights_conditioner: str = './chroma_weights/3262b44702040b1dcfccd71ebbcf451d/weights.pt'
     centered_pdb_file: str = '2g3n'
+    design_method: str = 'potts'
 
     def __post_init__(self):
         """
@@ -215,7 +216,7 @@ class ChromaBinders:
     def chroma_sampling(self,
                    protein,
                    conditioner,
-                   mask_aa
+                   mask_aa,
                     ):
            proteins, traj = self.chroma.sample(
                protein_init=protein,
@@ -229,6 +230,7 @@ class ChromaBinders:
                steps=self.diff_steps,
                samples=self.num_backbones,
                num_designs=self.num_designs,
+               design_method=self.design_method,
            )
            
            return proteins, traj
